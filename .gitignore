@@ -1,0 +1,18 @@
+# Cocos Creator
+library/
+temp/
+local/
+build/
+profiles/
+native
+# Node (if tools use npm)
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.suo
+*.user
