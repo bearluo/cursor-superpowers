@@ -16,3 +16,6 @@ Thumbs.db
 .idea/
 *.suo
 *.user
+
+# worktrees
+.worktrees/
