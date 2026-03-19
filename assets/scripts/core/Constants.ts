@@ -16,6 +16,19 @@ export const BUNDLES = {
 export const EVENTS = {
   AppReady: 'app:ready',
   SceneChange: 'scene:change',
+  // 约定：事件名用“域:动作”，便于在 Creator 控制台/日志里按域过滤。
+  CombatStarted: 'combat:started',
+  CombatTick: 'combat:tick',
+  ProtocolApplied: 'combat:protocol-applied',
+  ReactionTriggered: 'combat:reaction-triggered',
+  CorruptionChanged: 'run:corruption-changed',
+  OverloadStateChanged: 'run:overload-state-changed',
+  WaveChanged: 'run:wave-changed',
+  RunRewardOffered: 'run:reward-offered',
+  RunRewardChosen: 'run:reward-chosen',
+  RunEnded: 'run:ended',
+  // 腐化值跨越阈值时触发，MeltdownSystem 负责侦听并发出
+  MeltdownTriggered: 'run:meltdown-triggered',
 } as const;
 
 export const VIEW_KEYS = {
