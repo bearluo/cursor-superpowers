@@ -75,6 +75,10 @@ export class WaveSystem {
     return this.state === 'reward' && this.wave >= this.wavesPerZone;
   }
 
+  getEnemyAliveCount(): number {
+    return this.enemyAliveCount;
+  }
+
   // MVP：简单公式，zone 越高、wave 越靠后，敌人越多
   private spawnCountForWave(zone: number, wave: number): number {
     return 2 + (zone - 1) * 2 + (wave - 1);

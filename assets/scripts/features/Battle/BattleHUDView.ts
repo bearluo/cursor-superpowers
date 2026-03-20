@@ -21,6 +21,9 @@ export class BattleHUDView extends Component {
   @property(Label)
   reactionToast: Label | null = null;
 
+  @property(Label)
+  rewardLabel: Label | null = null;
+
   /** 更新腐化值显示（0..100） */
   setCorruption(value: number, stage: number): void {
     if (this.corruptionBar) this.corruptionBar.progress = value / 100;
@@ -46,5 +49,21 @@ export class BattleHUDView extends Component {
   showReaction(reactionId: string): void {
     if (this.reactionToast) this.reactionToast.string = `⚡ ${reactionId}`;
     console.log(`[BattleHUDView] 反应=${reactionId}`);
+  }
+
+  setRewardOptions(options: Array<{ label: string }>): void {
+    const text = options.map((o, idx) => `${idx + 1}.${o.label}`).join('  ');
+    if (this.rewardLabel) this.rewardLabel.string = `奖励选择: ${text}`;
+    console.log(`[BattleHUDView] 奖励弹出 ${text}`);
+  }
+
+  clearRewardChoice(chosenId: string): void {
+    if (this.rewardLabel) this.rewardLabel.string = `奖励已选: ${chosenId}`;
+    console.log(`[BattleHUDView] 奖励已选 ${chosenId}`);
+  }
+
+  showMilestone(text: string): void {
+    if (this.reactionToast) this.reactionToast.string = text;
+    console.log(`[BattleHUDView] 里程碑 ${text}`);
   }
 }

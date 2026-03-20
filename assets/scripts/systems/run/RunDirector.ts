@@ -27,6 +27,7 @@ export class RunDirector {
 
   private readonly wave = new WaveSystem();
   private running = false;
+  private pendingRewardOptions: RunRewardOption[] = [];
 
   // MVP：最大 zone 数（后续可配置）
   private readonly maxZones = 3;
@@ -50,6 +51,7 @@ export class RunDirector {
   /** 玩家选定奖励后调用 */
   onRewardChosen(optionId: string): void {
     EventBus.emit(EVENTS.RunRewardChosen, { optionId });
+    this.pendingRewardOptions = [];
 
     if (this.wave.isZoneComplete()) {
       this.advanceZone();
@@ -80,7 +82,16 @@ export class RunDirector {
       { id: 'chip_arc_up', label: '电弧协议强化' },
       { id: 'passive_regen', label: '过载后快速冷却' },
     ];
+    this.pendingRewardOptions = options;
     const payload: RunRewardPayload = { options };
     EventBus.emit(EVENTS.RunRewardOffered, payload);
+  }
+
+  getPendingRewardOptions(): RunRewardOption[] {
+    return this.pendingRewardOptions;
+  }
+
+  getEnemyAliveCount(): number {
+    return this.wave.getEnemyAliveCount();
   }
 }

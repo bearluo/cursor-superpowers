@@ -32,6 +32,15 @@ export class BattleHUDController extends Component {
       EventBus.on(EVENTS.ReactionTriggered, (p: { reactionId: string }) => {
         this.view?.showReaction(p.reactionId);
       }),
+      EventBus.on(EVENTS.RunRewardOffered, (p: { options: Array<{ label: string }> }) => {
+        this.view?.setRewardOptions(p.options);
+      }),
+      EventBus.on(EVENTS.RunRewardChosen, (p: { optionId: string }) => {
+        this.view?.clearRewardChoice(p.optionId);
+      }),
+      EventBus.on(EVENTS.MeltdownTriggered, (p: { eventType: string; stage: number }) => {
+        this.view?.showMilestone(`阈值跨越: 阶段${p.stage} ${p.eventType}`);
+      }),
     );
   }
 

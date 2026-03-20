@@ -16,6 +16,9 @@ export const BUNDLES = {
 export const EVENTS = {
   AppReady: 'app:ready',
   SceneChange: 'scene:change',
+  InputMove: 'input:move',
+  InputOverloadPressed: 'input:overload-pressed',
+  InputRewardChosen: 'input:reward-chosen',
   // 约定：事件名用“域:动作”，便于在 Creator 控制台/日志里按域过滤。
   CombatStarted: 'combat:started',
   CombatTick: 'combat:tick',
@@ -33,6 +36,7 @@ export const EVENTS = {
 
 export const VIEW_KEYS = {
   Login: 'Login',
+  Battle: 'Battle',
 } as const;
 
 export type ViewKey = (typeof VIEW_KEYS)[keyof typeof VIEW_KEYS];
@@ -41,5 +45,6 @@ export const VIEWS: Record<ViewKey, { bundle: string; prefabPath: string }> = {
   // 约定：UI prefab 的加载都走 UIManager + BundleManager
   // 注意：你需要创建对应 prefab，并保证路径匹配（不含扩展名）
   [VIEW_KEYS.Login]: { bundle: BUNDLES.Resources, prefabPath: 'prefabs/ui/Login/UI_Login' },
+  [VIEW_KEYS.Battle]: { bundle: BUNDLES.Resources, prefabPath: 'prefabs/ui/Battle/HUD_Battle' },
 } as const;
 

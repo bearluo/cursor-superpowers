@@ -12,6 +12,11 @@ export class BattleHUDSmoke extends Component {
     EventBus.emit(EVENTS.OverloadStateChanged, { isOverloading: true, cooldownMs: 0, durationMsRemaining: 6000 });
     EventBus.emit(EVENTS.WaveChanged, { zone: 1, wave: 2, state: 'clearing' });
     EventBus.emit(EVENTS.ReactionTriggered, { reactionId: 'OverheatDischarge', enemyId: 'E1' });
+    EventBus.emit(EVENTS.RunRewardOffered, {
+      options: [{ id: 'a', label: '攻速+' }, { id: 'b', label: '反应伤害+' }, { id: 'c', label: '稳定性+' }],
+    });
+    EventBus.emit(EVENTS.RunRewardChosen, { optionId: 'b' });
+    EventBus.emit(EVENTS.MeltdownTriggered, { eventType: 'HunterSpawned', stage: 1 });
     console.log('[BattleHUDSmoke] emitted');
   }
 }
