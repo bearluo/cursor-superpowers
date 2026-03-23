@@ -25,6 +25,11 @@ export class RunDirector {
     return this.wave.wave;
   }
 
+  /** 局是否仍在进行（胜利/失败后为 false） */
+  isRunActive(): boolean {
+    return this.running;
+  }
+
   private readonly wave = new WaveSystem();
   private running = false;
   private pendingRewardOptions: RunRewardOption[] = [];
@@ -93,5 +98,12 @@ export class RunDirector {
 
   getEnemyAliveCount(): number {
     return this.wave.getEnemyAliveCount();
+  }
+
+  /** 玩家死亡等失败结算 */
+  endRunDefeat(): void {
+    if (!this.running) return;
+    this.running = false;
+    EventBus.emit(EVENTS.RunEnded, { victory: false });
   }
 }

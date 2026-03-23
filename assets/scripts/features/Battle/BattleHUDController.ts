@@ -24,7 +24,13 @@ export class BattleHUDController extends Component {
         this.view?.setCorruption(p.value, p.stage);
       }),
       EventBus.on(EVENTS.OverloadStateChanged, (p: OverloadStatePayload) => {
-        this.view?.setOverload(p.isOverloading, p.durationMsRemaining);
+        this.view?.setOverload(
+          p.isOverloading,
+          p.durationMsRemaining,
+          p.cooldownMs,
+          p.cooldownMaxMs,
+          p.overloadDurationMaxMs,
+        );
       }),
       EventBus.on(EVENTS.WaveChanged, (p: WaveChangedPayload) => {
         this.view?.setWave(p.zone, p.wave, p.state);
@@ -41,7 +47,24 @@ export class BattleHUDController extends Component {
       EventBus.on(EVENTS.MeltdownTriggered, (p: { eventType: string; stage: number }) => {
         this.view?.showMilestone(`阈值跨越: 阶段${p.stage} ${p.eventType}`);
       }),
+      EventBus.on(EVENTS.PlayerHealthChanged, (p: { hp: number; maxHp: number }) => {
+        this.view?.setPlayerHealth(p.hp, p.maxHp);
+      }),
+      EventBus.on(EVENTS.RunEnded, (p: { victory: boolean }) => {
+        this.view?.showRunEnd(p.victory);
+      }),
+      EventBus.on(EVENTS.BattleFlowPaused, (p: { paused: boolean; reason?: string }) => {
+        if (p.paused && p.reason === 'reward') {
+          this.view?.showMilestone('选择奖励 (1/2/3)');
+        }
+      }),
     );
+
+    // PlayerHealth.start 等可能早于本组件 onLoad，需在 view 绑定后再请求补发。
+    // Bootstrap 常在 addComponent 之后才赋值 view，故推迟一帧再发 BattleHUDReady。
+    this.scheduleOnce(() => {
+      EventBus.emit(EVENTS.BattleHUDReady, {});
+    }, 0);
   }
 
   onDestroy(): void {

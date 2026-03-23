@@ -8,6 +8,7 @@ import { RunDirector } from '../../systems/run/RunDirector';
 import { ProtocolSystem } from '../../systems/combat/ProtocolSystem';
 import { EnemyAgent } from './EnemyAgent';
 import { AutoAttackSystem } from './AutoAttackSystem';
+import { PlayerHealth } from './PlayerHealth';
 
 const { ccclass, property } = _decorator;
 
@@ -22,6 +23,12 @@ export class ArenaBattleController extends Component {
   @property(Prefab)
   enemyPrefab: Prefab | null = null;
 
+  @property
+  contactDamageRadius = 36;
+
+  @property
+  contactDps = 28;
+
   director!: RunDirector;
   corruption!: CorruptionSystem;
   overload!: OverloadSystem;
@@ -33,6 +40,8 @@ export class ArenaBattleController extends Component {
   private timeCorruptionPerSecond = 2;
   private enemyCounter = 0;
   private readonly enemies = new Map<string, EnemyAgent>();
+  private playerHealth: PlayerHealth | null = null;
+  private rewardChoiceOpen = false;
 
   // 供 Bootstrap/场景装配读取的默认竞技场边界
   readonly arenaBounds = {
@@ -53,8 +62,19 @@ export class ArenaBattleController extends Component {
       onEnemyKilled: (enemy) => this.onEnemyKilled(enemy),
     });
 
+    this.playerHealth = this.player?.getComponent(PlayerHealth) ?? null;
+
     this.unsubscribes.push(
+      EventBus.on(EVENTS.RunRewardOffered, () => {
+        this.rewardChoiceOpen = true;
+        EventBus.emit(EVENTS.BattleFlowPaused, { paused: true, reason: 'reward' as const });
+      }),
+      EventBus.on(EVENTS.RunRewardChosen, () => {
+        this.rewardChoiceOpen = false;
+        EventBus.emit(EVENTS.BattleFlowPaused, { paused: false });
+      }),
       EventBus.on(EVENTS.InputOverloadPressed, () => {
+        if (!this.director.isRunActive() || this.rewardChoiceOpen) return;
         const wasOverloading = this.overload.isOverloading;
         this.overload.startOverload();
         const justStarted = !wasOverloading && this.overload.isOverloading;
@@ -83,10 +103,15 @@ export class ArenaBattleController extends Component {
   }
 
   update(dt: number): void {
+    if (!this.director.isRunActive()) return;
+
+    if (this.rewardChoiceOpen) return;
+
     const dtMs = dt * 1000;
     this.overload.tick(dtMs);
     this.corruption.add(this.timeCorruptionPerSecond * dt, 'time');
     this.autoAttack.tick(dtMs);
+    this.tickPlayerContactDamage(dt);
   }
 
   onDestroy(): void {
@@ -137,5 +162,32 @@ export class ArenaBattleController extends Component {
       this.spawnEnemy(new Vec3(x, y, 0));
     }
     console.log(`[ArenaBattleController] spawned enemies for wave: ${count}`);
+  }
+
+  private tickPlayerContactDamage(dt: number): void {
+    if (!this.player?.isValid || !this.playerHealth || this.playerHealth.isDead) return;
+    const p = this.player.worldPosition;
+    const r = this.contactDamageRadius;
+    const r2 = r * r;
+    let touching = false;
+    for (const e of this.enemies.values()) {
+      if (e.isDead) continue;
+      const dx = e.node.worldPosition.x - p.x;
+      const dy = e.node.worldPosition.y - p.y;
+      if (dx * dx + dy * dy <= r2) {
+        touching = true;
+        break;
+      }
+    }
+    if (!touching) return;
+    if (this.playerHealth.applyDamage(this.contactDps * dt)) {
+      this.onPlayerDefeated();
+    }
+  }
+
+  private onPlayerDefeated(): void {
+    console.log('[ArenaBattleController] player defeated');
+    EventBus.emit(EVENTS.BattleFlowPaused, { paused: true, reason: 'defeat' as const });
+    this.director.endRunDefeat();
   }
 }

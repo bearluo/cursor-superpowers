@@ -18,11 +18,24 @@ export class BattleHUDView extends Component {
   @property(Label)
   overloadLabel: Label | null = null;
 
+  /** 可选：过载持续 / 冷却剩余 的进度（与 overloadLabel 同步） */
+  @property(ProgressBar)
+  overloadBar: ProgressBar | null = null;
+
   @property(Label)
   reactionToast: Label | null = null;
 
   @property(Label)
   rewardLabel: Label | null = null;
+
+  @property(ProgressBar)
+  playerHpBar: ProgressBar | null = null;
+
+  @property(Label)
+  playerHpLabel: Label | null = null;
+
+  @property(Label)
+  runEndLabel: Label | null = null;
 
   /** 更新腐化值显示（0..100） */
   setCorruption(value: number, stage: number): void {
@@ -31,11 +44,40 @@ export class BattleHUDView extends Component {
     console.log(`[BattleHUDView] 腐化=${value} 阶段=${stage}`);
   }
 
-  /** 更新过载状态显示 */
-  setOverload(isOverloading: boolean, remainMs: number): void {
-    const text = isOverloading ? `过载中 (${(remainMs / 1000).toFixed(1)}s)` : '过载就绪';
+  /**
+   * 更新过载状态显示（过载持续中 / 冷却中 / 可释放）
+   * @param cooldownMs 剩余冷却毫秒数（仅非过载时有效）
+   * @param cooldownMaxMs 冷却总毫秒数
+   * @param overloadDurationMaxMs 过载持续总毫秒数
+   */
+  setOverload(
+    isOverloading: boolean,
+    durationRemainMs: number,
+    cooldownMs: number,
+    cooldownMaxMs: number,
+    overloadDurationMaxMs: number,
+  ): void {
+    let text: string;
+    if (isOverloading) {
+      text = `过载中 ${(durationRemainMs / 1000).toFixed(1)}s / ${(overloadDurationMaxMs / 1000).toFixed(0)}s`;
+    } else if (cooldownMs > 0) {
+      text = `冷却中 ${(cooldownMs / 1000).toFixed(1)}s / ${(cooldownMaxMs / 1000).toFixed(0)}s`;
+    } else {
+      text = '过载就绪 (Space)';
+    }
     if (this.overloadLabel) this.overloadLabel.string = text;
-    console.log(`[BattleHUDView] 过载=${isOverloading}`);
+
+    if (this.overloadBar) {
+      if (isOverloading && overloadDurationMaxMs > 0) {
+        this.overloadBar.progress = durationRemainMs / overloadDurationMaxMs;
+      } else if (cooldownMs > 0 && cooldownMaxMs > 0) {
+        // 冷却剩余占比（从满条随时间减少）
+        this.overloadBar.progress = cooldownMs / cooldownMaxMs;
+      } else {
+        this.overloadBar.progress = 1;
+      }
+    }
+    console.log(`[BattleHUDView] 过载=${isOverloading} cd=${cooldownMs}ms`);
   }
 
   /** 更新波次显示 */
@@ -65,5 +107,18 @@ export class BattleHUDView extends Component {
   showMilestone(text: string): void {
     if (this.reactionToast) this.reactionToast.string = text;
     console.log(`[BattleHUDView] 里程碑 ${text}`);
+  }
+
+  setPlayerHealth(hp: number, maxHp: number): void {
+    const ratio = maxHp > 0 ? hp / maxHp : 0;
+    if (this.playerHpBar) this.playerHpBar.progress = ratio;
+    if (this.playerHpLabel) this.playerHpLabel.string = `生命: ${Math.ceil(hp)}/${maxHp}`;
+    console.log(`[BattleHUDView] HP ${hp}/${maxHp}`);
+  }
+
+  showRunEnd(victory: boolean): void {
+    const text = victory ? '胜利' : '失败';
+    if (this.runEndLabel) this.runEndLabel.string = `对局结束 — ${text}`;
+    console.log(`[BattleHUDView] 对局结束 victory=${victory}`);
   }
 }

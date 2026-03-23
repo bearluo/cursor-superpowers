@@ -19,6 +19,12 @@ export const EVENTS = {
   InputMove: 'input:move',
   InputOverloadPressed: 'input:overload-pressed',
   InputRewardChosen: 'input:reward-chosen',
+  /** 战斗流程暂停（奖励选择、玩家死亡等），用于暂停移动/自动战斗等 */
+  BattleFlowPaused: 'battle:flow-paused',
+  /** 玩家生命值变化，供 HUD 显示 */
+  PlayerHealthChanged: 'combat:player-health-changed',
+  /** 战斗 HUD 已挂载并注册监听后发出，供 PlayerHealth 等补发一次当前状态 */
+  BattleHUDReady: 'ui:battle-hud-ready',
   // 约定：事件名用“域:动作”，便于在 Creator 控制台/日志里按域过滤。
   CombatStarted: 'combat:started',
   CombatTick: 'combat:tick',

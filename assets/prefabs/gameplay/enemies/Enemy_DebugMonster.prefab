@@ -127,8 +127,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 100,
-      "height": 100
+      "width": 30,
+      "height": 30
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -263,7 +263,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 62.24609375,
+      "width": 13.33984375,
       "height": 50.4
     },
     "_anchorPoint": {
@@ -299,7 +299,7 @@
       "b": 0,
       "a": 255
     },
-    "_string": "Enemy",
+    "_string": "E",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
     "_actualFontSize": 20,
@@ -372,8 +372,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 100,
-      "height": 100
+      "width": 30,
+      "height": 30
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",

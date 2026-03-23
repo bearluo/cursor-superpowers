@@ -25,19 +25,33 @@ export class PlayerMotor extends Component {
   private move: InputMovePayload = { x: 0, y: 0 };
   private readonly tmp = new Vec3();
   private offMove: (() => void) | null = null;
+  private battlePaused = false;
+  private runEnded = false;
+  private readonly offBus: Array<() => void> = [];
 
   onEnable(): void {
     this.offMove = EventBus.on(EVENTS.InputMove, (p: InputMovePayload) => {
       this.move = p;
     });
+    this.offBus.push(
+      EventBus.on(EVENTS.BattleFlowPaused, (p: { paused: boolean }) => {
+        this.battlePaused = p.paused;
+      }),
+      EventBus.on(EVENTS.RunEnded, () => {
+        this.runEnded = true;
+      }),
+    );
   }
 
   onDisable(): void {
     this.offMove?.();
     this.offMove = null;
+    for (const off of this.offBus) off();
+    this.offBus.length = 0;
   }
 
   update(dt: number): void {
+    if (this.runEnded || this.battlePaused) return;
     if (this.move.x === 0 && this.move.y === 0) return;
     this.node.getPosition(this.tmp);
     this.tmp.x += this.move.x * this.speed * dt;

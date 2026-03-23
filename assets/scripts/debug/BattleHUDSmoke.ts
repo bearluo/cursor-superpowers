@@ -9,7 +9,13 @@ const { ccclass } = _decorator;
 export class BattleHUDSmoke extends Component {
   start(): void {
     EventBus.emit(EVENTS.CorruptionChanged, { prevValue: 0, value: 42, stage: 1, reason: 'time' });
-    EventBus.emit(EVENTS.OverloadStateChanged, { isOverloading: true, cooldownMs: 0, durationMsRemaining: 6000 });
+    EventBus.emit(EVENTS.OverloadStateChanged, {
+      isOverloading: true,
+      cooldownMs: 0,
+      durationMsRemaining: 6000,
+      cooldownMaxMs: 12000,
+      overloadDurationMaxMs: 6000,
+    });
     EventBus.emit(EVENTS.WaveChanged, { zone: 1, wave: 2, state: 'clearing' });
     EventBus.emit(EVENTS.ReactionTriggered, { reactionId: 'OverheatDischarge', enemyId: 'E1' });
     EventBus.emit(EVENTS.RunRewardOffered, {

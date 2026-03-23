@@ -5,6 +5,10 @@ export type OverloadStatePayload = {
   isOverloading: boolean;
   cooldownMs: number;
   durationMsRemaining: number;
+  /** 冷却总时长（用于 HUD 进度条比例） */
+  cooldownMaxMs: number;
+  /** 过载持续总时长（用于 HUD 进度条比例） */
+  overloadDurationMaxMs: number;
 };
 
 // 主动过载系统（最小状态机）。
@@ -40,13 +44,14 @@ export class OverloadSystem {
 
     if (this.isOverloading) {
       this.durationMsRemaining = Math.max(0, this.durationMsRemaining - dtMs);
+      this.emit();
       if (this.durationMsRemaining <= 0) this.endOverload();
       return;
     }
 
     if (this.cooldownMs > 0) {
       this.cooldownMs = Math.max(0, this.cooldownMs - dtMs);
-      // MVP：不需要每 tick emit，只在状态切换时 emit
+      this.emit();
     }
   }
 
@@ -55,6 +60,8 @@ export class OverloadSystem {
       isOverloading: this.isOverloading,
       cooldownMs: this.cooldownMs,
       durationMsRemaining: this.durationMsRemaining,
+      cooldownMaxMs: this.overloadCooldownMs,
+      overloadDurationMaxMs: this.overloadDurationMs,
     };
     EventBus.emit(EVENTS.OverloadStateChanged, payload);
   }

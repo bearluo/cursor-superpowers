@@ -7,6 +7,7 @@ import {
   Node,
   Prefab,
   RenderRoot2D,
+  UITransform,
   Widget,
 } from 'cc';
 import { BundleManager } from '../../services/BundleManager';
@@ -99,6 +100,8 @@ export class UIManager {
     if (this.root && this.root.isValid) return this.root;
     const scene = director.getScene();
     const node = new Node('UIRoot');
+    const transform = node.addComponent(UITransform);;
+    transform.setAnchorPoint(0, 0);
     node.addComponent(RenderRoot2D);
     let widget = node.addComponent(Widget);
     widget.isAlignTop = true;

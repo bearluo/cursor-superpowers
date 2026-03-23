@@ -3,6 +3,7 @@ import { ArenaBattleController } from '../features/Battle/ArenaBattleController'
 import { BattleHUDController } from '../features/Battle/BattleHUDController';
 import { BattleHUDView } from '../features/Battle/BattleHUDView';
 import { PlayerMotor } from '../features/Battle/PlayerMotor';
+import { PlayerHealth } from '../features/Battle/PlayerHealth';
 import { RewardChoiceController } from '../features/Battle/RewardChoiceController';
 import { KeyboardInputController } from '../features/Input/KeyboardInputController';
 import { VIEW_KEYS } from '../core/Constants';
@@ -26,6 +27,10 @@ export class PlayableDemoBootstrap extends Component {
     if (!this.enemiesRoot) return;
     if (!this.enemyPrefab) return;
     if (!this.player) return;
+
+    if (!this.player.getComponent(PlayerHealth)) {
+      this.player.addComponent(PlayerHealth);
+    }
 
     const inputNode = new Node('Input');
     this.node.addChild(inputNode);
