@@ -1,0 +1,40 @@
+---
+description: 资源与文件创建需遵循项目结构和命名规范
+alwaysApply: true
+---
+
+# Cocos 项目结构与资源命名约束
+
+创建任何新文件/资源时，必须遵循 `docs/plans/2026-03-16-cocos-creator-project-structure-design.md`。
+
+## 1) 目录放置约束（必须）
+
+- 文档放在 `docs/` 下对应子目录：`design/`、`tech/`、`art/`、`audio/`、`pipeline/`、`changelog/`。
+- Cocos 资源只放在 `assets/` 规范目录：`scenes/`、`scripts/`、`prefabs/`、`textures/`、`audio/`、`animations/`、`effects/`、`data/`、`resources/dynamic/`、`tests/`。
+- 脚本按职责放置：`assets/scripts/core`、`framework`、`systems`、`features`、`services`、`ui`、`debug`。
+- 禁止把业务代码和资源随意放到未约定目录。
+
+## 2) 脚本依赖方向（必须）
+
+- 依赖方向固定为：`features -> systems/framework -> core`。
+- 禁止 `features` 之间直接 import；跨模块通信使用 EventBus/GameManager/systems。
+- `core` 不依赖上层模块。
+
+## 3) 资源命名规范（必须）
+
+- UI 贴图：`ui_<模块>_<用途>_<序号>`，例如 `ui_lobby_btn_start.png`
+- 角色/怪物：`char_<名称>_<动作>_<序号>`
+- 背景：`bg_<场景>_<名称>`
+- 特效：`fx_<名称>_<序号>`
+- BGM：`bgm_<场景或情绪>`
+- 音效：`sfx_<类型>_<名称>`
+- 预制体：使用 `UI_` / `Char_` / `Fx_` 等前缀 + PascalCase，例如 `UI_BattleHUD`、`Char_Gatekeeper`
+
+## 4) 创建前检查清单（执行）
+
+- 这个文件/资源是否放在约定目录？
+- 名称是否符合对应类型模板？
+- 若是脚本，是否满足依赖方向约束？
+- 是否破坏已有同类前缀/命名风格一致性？
+
+若不满足以上任一项，先调整路径/命名再创建。
