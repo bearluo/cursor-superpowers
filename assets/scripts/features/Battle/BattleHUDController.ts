@@ -17,6 +17,11 @@ export class BattleHUDController extends Component {
 
   // 用函数引用保存注销句柄（EventBus.on 返回 off 函数）
   private readonly unsubscribes: Array<() => void> = [];
+  private telemetry = {
+    reinforcementWaves: 0,
+    reinforcementEnemyTotal: 0,
+    maxAliveEnemies: 0,
+  };
 
   onLoad(): void {
     this.unsubscribes.push(
@@ -30,13 +35,21 @@ export class BattleHUDController extends Component {
           p.cooldownMs,
           p.cooldownMaxMs,
           p.overloadDurationMaxMs,
+          p.isDecaying,
+          p.decayMsRemaining,
         );
       }),
       EventBus.on(EVENTS.WaveChanged, (p: WaveChangedPayload) => {
         this.view?.setWave(p.zone, p.wave, p.state);
+        if (p.state === 'clearing' && p.wave >= 3) {
+          this.view?.showMilestone('守门者波次开始');
+        }
       }),
       EventBus.on(EVENTS.ReactionTriggered, (p: { reactionId: string }) => {
         this.view?.showReaction(p.reactionId);
+      }),
+      EventBus.on(EVENTS.ReactionResolved, (p: { reactionId: string; damage: number; affectedCount: number }) => {
+        this.view?.showReactionResolution(p.reactionId, p.damage, p.affectedCount);
       }),
       EventBus.on(EVENTS.RunRewardOffered, (p: { options: Array<{ label: string }> }) => {
         this.view?.setRewardOptions(p.options);
@@ -53,10 +66,25 @@ export class BattleHUDController extends Component {
       EventBus.on(EVENTS.RunEnded, (p: { victory: boolean }) => {
         this.view?.showRunEnd(p.victory);
       }),
+      EventBus.on(EVENTS.XpProgressChanged, (p: { xpCurrent: number; xpNeed: number; rewardLevel: number }) => {
+        this.view?.setXpProgress(p.xpCurrent, p.xpNeed, p.rewardLevel);
+      }),
       EventBus.on(EVENTS.BattleFlowPaused, (p: { paused: boolean; reason?: string }) => {
         if (p.paused && p.reason === 'reward') {
           this.view?.showMilestone('选择奖励 (1/2/3)');
         }
+      }),
+      EventBus.on(EVENTS.ReinforcementSpawned, (p: { count: number }) => {
+        this.telemetry.reinforcementWaves += 1;
+        this.telemetry.reinforcementEnemyTotal += p.count;
+        this.syncTelemetry();
+      }),
+      EventBus.on(EVENTS.EnemyAliveChanged, (p: { alive: number }) => {
+        this.telemetry.maxAliveEnemies = Math.max(this.telemetry.maxAliveEnemies, p.alive);
+        this.syncTelemetry();
+      }),
+      EventBus.on(EVENTS.RunEnded, () => {
+        this.syncTelemetry();
       }),
     );
 
@@ -70,5 +98,13 @@ export class BattleHUDController extends Component {
   onDestroy(): void {
     for (const off of this.unsubscribes) off();
     this.unsubscribes.length = 0;
+  }
+
+  private syncTelemetry(): void {
+    this.view?.setTelemetry(
+      this.telemetry.reinforcementWaves,
+      this.telemetry.reinforcementEnemyTotal,
+      this.telemetry.maxAliveEnemies,
+    );
   }
 }

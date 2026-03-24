@@ -33,40 +33,61 @@ export class RunDirector {
   private readonly wave = new WaveSystem();
   private running = false;
   private pendingRewardOptions: RunRewardOption[] = [];
+  private elapsedInWaveSec = 0;
+  private gatekeeperKilledInZone = false;
 
   // MVP：最大 zone 数（后续可配置）
   private readonly maxZones = 3;
+  private readonly waveDurationSec = 120;
 
   startRun(): void {
     this.running = true;
+    this.elapsedInWaveSec = 0;
+    this.gatekeeperKilledInZone = false;
     this.wave.startZone(1);
     // MVP：假设生成立即完成（无实际 Spawner），直接进入 clearing 阶段
     this.wave.onSpawnComplete();
+  }
+
+  tick(dtSec: number): void {
+    if (!this.running) return;
+    if (dtSec <= 0) return;
+    this.elapsedInWaveSec += dtSec;
+    if (this.elapsedInWaveSec < this.waveDurationSec) return;
+    // 关键约束：守门波次必须击杀守门者后才能过关。
+    if (this.wave.isZoneComplete()) {
+      if (!this.gatekeeperKilledInZone) return;
+      this.elapsedInWaveSec = 0;
+      this.advanceZone();
+      return;
+    }
+
+    this.elapsedInWaveSec = 0;
+    const advanced = this.wave.nextWave();
+    if (advanced) this.wave.onSpawnComplete();
   }
 
   /** 模拟击杀一个敌人（Debug 场景 / 真实战斗均调用） */
   simulateKill(): void {
     if (!this.running) return;
     this.wave.onEnemyKilled();
-    if (this.wave.isWaveCleared()) {
-      this.offerReward();
-    }
+  }
+
+  markGatekeeperKilled(): void {
+    this.gatekeeperKilledInZone = true;
+  }
+
+  tryOfferRewardByXp(): boolean {
+    if (!this.running) return false;
+    if (this.pendingRewardOptions.length > 0) return false;
+    this.offerReward();
+    return true;
   }
 
   /** 玩家选定奖励后调用 */
   onRewardChosen(optionId: string): void {
     EventBus.emit(EVENTS.RunRewardChosen, { optionId });
     this.pendingRewardOptions = [];
-
-    if (this.wave.isZoneComplete()) {
-      this.advanceZone();
-    } else {
-      const advanced = this.wave.nextWave();
-      if (advanced) {
-        // MVP：新波生成立即完成
-        this.wave.onSpawnComplete();
-      }
-    }
   }
 
   private advanceZone(): void {
@@ -76,6 +97,8 @@ export class RunDirector {
       EventBus.emit(EVENTS.RunEnded, { victory: true });
       return;
     }
+    this.elapsedInWaveSec = 0;
+    this.gatekeeperKilledInZone = false;
     this.wave.startZone(nextZone);
     this.wave.onSpawnComplete();
   }
@@ -98,6 +121,15 @@ export class RunDirector {
 
   getEnemyAliveCount(): number {
     return this.wave.getEnemyAliveCount();
+  }
+
+  addReinforcementEnemies(count: number): void {
+    if (!this.running) return;
+    this.wave.addEnemyCount(count);
+  }
+
+  isGatekeeperWave(): boolean {
+    return this.wave.isGatekeeperWave();
   }
 
   /** 玩家死亡等失败结算 */

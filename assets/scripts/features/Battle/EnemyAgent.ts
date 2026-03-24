@@ -7,9 +7,11 @@ const { ccclass, property } = _decorator;
 @ccclass('EnemyAgent')
 export class EnemyAgent extends Component {
   @property
-  speed = 120;
+  speed = 60;
 
   hp = 100;
+  maxHp = 100;
+  isGatekeeper = false;
   enemyId = '';
   target: Node | null = null;
 
@@ -56,5 +58,12 @@ export class EnemyAgent extends Component {
   applyDamage(amount: number): boolean {
     this.hp = Math.max(0, this.hp - amount);
     return this.isDead;
+  }
+
+  setupAsGatekeeper(): void {
+    this.isGatekeeper = true;
+    this.maxHp = 320;
+    this.hp = 320;
+    this.speed = 80;
   }
 }

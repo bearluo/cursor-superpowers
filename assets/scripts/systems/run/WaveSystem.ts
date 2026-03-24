@@ -1,9 +1,9 @@
 import { EventBus } from '../../core/EventBus';
 import { EVENTS } from '../../core/Constants';
 
-// 波次状态机：每个波次经历 spawning → clearing → reward 三个阶段。
-// MVP 简化：reward 阶段由 RunDirector 驱动（手动推进），不在 WaveSystem 内自动跳转。
-export type WaveState = 'spawning' | 'clearing' | 'reward';
+// 波次状态机：每个波次经历 spawning → clearing 两个阶段。
+// 波次推进由 RunDirector 的时间驱动，不再依赖 reward 状态。
+export type WaveState = 'spawning' | 'clearing';
 
 export type WaveChangedPayload = {
   zone: number;
@@ -39,10 +39,7 @@ export class WaveSystem {
   onEnemyKilled(): void {
     if (this.state !== 'clearing') return;
     this.enemyAliveCount = Math.max(0, this.enemyAliveCount - 1);
-    if (this.enemyAliveCount <= 0) {
-      this.state = 'reward';
-      this.emit();
-    }
+    this.emit();
   }
 
   /** 生成完毕后转入 clearing 阶段（Spawner 调用完成后手动触发） */
@@ -52,9 +49,9 @@ export class WaveSystem {
     this.emit();
   }
 
-  /** 奖励选择完毕后推进到下一波 */
+  /** 由时间驱动推进到下一波 */
   nextWave(): boolean {
-    if (this.state !== 'reward') return false;
+    if (this.state !== 'clearing') return false;
 
     if (this.wave < this.wavesPerZone) {
       this.wave += 1;
@@ -68,19 +65,31 @@ export class WaveSystem {
   }
 
   isWaveCleared(): boolean {
-    return this.state === 'reward';
+    return this.enemyAliveCount <= 0;
   }
 
   isZoneComplete(): boolean {
-    return this.state === 'reward' && this.wave >= this.wavesPerZone;
+    return this.wave >= this.wavesPerZone;
   }
 
   getEnemyAliveCount(): number {
     return this.enemyAliveCount;
   }
 
+  addEnemyCount(count: number): void {
+    if (this.state !== 'clearing') return;
+    if (count <= 0) return;
+    this.enemyAliveCount += count;
+    this.emit();
+  }
+
+  isGatekeeperWave(): boolean {
+    return this.wave === this.wavesPerZone;
+  }
+
   // MVP：简单公式，zone 越高、wave 越靠后，敌人越多
   private spawnCountForWave(zone: number, wave: number): number {
+    if (wave >= this.wavesPerZone) return 1;
     return 2 + (zone - 1) * 2 + (wave - 1);
   }
 

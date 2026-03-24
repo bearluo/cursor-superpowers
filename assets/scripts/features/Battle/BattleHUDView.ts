@@ -37,6 +37,15 @@ export class BattleHUDView extends Component {
   @property(Label)
   runEndLabel: Label | null = null;
 
+  @property(ProgressBar)
+  xpBar: ProgressBar | null = null;
+
+  @property(Label)
+  xpLabel: Label | null = null;
+
+  @property(Label)
+  telemetryLabel: Label | null = null;
+
   /** 更新腐化值显示（0..100） */
   setCorruption(value: number, stage: number): void {
     if (this.corruptionBar) this.corruptionBar.progress = value / 100;
@@ -56,10 +65,14 @@ export class BattleHUDView extends Component {
     cooldownMs: number,
     cooldownMaxMs: number,
     overloadDurationMaxMs: number,
+    isDecaying: boolean,
+    decayRemainMs: number,
   ): void {
     let text: string;
     if (isOverloading) {
       text = `过载中 ${(durationRemainMs / 1000).toFixed(1)}s / ${(overloadDurationMaxMs / 1000).toFixed(0)}s`;
+    } else if (isDecaying) {
+      text = `衰减中 ${(decayRemainMs / 1000).toFixed(1)}s`;
     } else if (cooldownMs > 0) {
       text = `冷却中 ${(cooldownMs / 1000).toFixed(1)}s / ${(cooldownMaxMs / 1000).toFixed(0)}s`;
     } else {
@@ -70,6 +83,8 @@ export class BattleHUDView extends Component {
     if (this.overloadBar) {
       if (isOverloading && overloadDurationMaxMs > 0) {
         this.overloadBar.progress = durationRemainMs / overloadDurationMaxMs;
+      } else if (isDecaying) {
+        this.overloadBar.progress = 0.25;
       } else if (cooldownMs > 0 && cooldownMaxMs > 0) {
         // 冷却剩余占比（从满条随时间减少）
         this.overloadBar.progress = cooldownMs / cooldownMaxMs;
@@ -91,6 +106,12 @@ export class BattleHUDView extends Component {
   showReaction(reactionId: string): void {
     if (this.reactionToast) this.reactionToast.string = `⚡ ${reactionId}`;
     console.log(`[BattleHUDView] 反应=${reactionId}`);
+  }
+
+  showReactionResolution(reactionId: string, damage: number, affectedCount: number): void {
+    const text = `${reactionId} 伤害${damage.toFixed(0)} 影响${affectedCount}`;
+    if (this.reactionToast) this.reactionToast.string = text;
+    console.log(`[BattleHUDView] 反应结算 ${text}`);
   }
 
   setRewardOptions(options: Array<{ label: string }>): void {
@@ -120,5 +141,18 @@ export class BattleHUDView extends Component {
     const text = victory ? '胜利' : '失败';
     if (this.runEndLabel) this.runEndLabel.string = `对局结束 — ${text}`;
     console.log(`[BattleHUDView] 对局结束 victory=${victory}`);
+  }
+
+  setXpProgress(xpCurrent: number, xpNeed: number, rewardLevel: number): void {
+    const ratio = xpNeed > 0 ? xpCurrent / xpNeed : 0;
+    if (this.xpBar) this.xpBar.progress = Math.min(1, Math.max(0, ratio));
+    if (this.xpLabel) this.xpLabel.string = `经验: ${Math.floor(xpCurrent)}/${xpNeed}  奖励等级:${rewardLevel}`;
+    console.log(`[BattleHUDView] XP ${xpCurrent}/${xpNeed} level=${rewardLevel}`);
+  }
+
+  setTelemetry(reinforcementWaves: number, reinforcementEnemyTotal: number, maxAliveEnemies: number): void {
+    const text = `增援波次:${reinforcementWaves}  增援总数:${reinforcementEnemyTotal}  峰值活怪:${maxAliveEnemies}`;
+    if (this.telemetryLabel) this.telemetryLabel.string = text;
+    console.log(`[BattleHUDView] telemetry ${text}`);
   }
 }

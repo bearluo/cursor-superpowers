@@ -44,28 +44,33 @@ export class AutoAttackSystem {
     const target = enemies[0];
     if (!target) return;
 
-    const baseDmg = this.overload.isOverloading ? this.damage * 1.35 : this.damage;
+    const dmgMul = this.overload.getDamageMultiplier();
+    const baseDmg = this.damage * dmgMul;
     const killedByBase = target.applyDamage(baseDmg);
 
     const [p1, p2] = this.pairs[this.pairIndex % this.pairs.length];
     this.pairIndex += 1;
-    const stackDelta = this.overload.isOverloading ? 80 : 60;
+    const stackDelta = this.overload.isOverloading ? 80 : this.overload.isDecaying ? 45 : 60;
     this.protocol.apply(target.enemyId, p1, stackDelta);
     this.protocol.apply(target.enemyId, p2, stackDelta);
     const reactions = this.protocol.consumeReactions(target.enemyId);
     for (const reactionId of reactions) {
       EventBus.emit(EVENTS.ReactionTriggered, { reactionId, enemyId: target.enemyId });
-      const reactionDmg = this.reactionDamage * this.reactionMultiplier * (this.overload.isOverloading ? 1.5 : 1);
+      const reactionDmg = this.reactionDamage * this.reactionMultiplier * (this.overload.isOverloading ? 1.5 : this.overload.isDecaying ? 0.8 : 1);
+      let affectedCount = 1;
       const killedByReaction = target.applyDamage(reactionDmg);
       if (killedByReaction) {
         this.hooks.onEnemyKilled(target);
+        EventBus.emit(EVENTS.ReactionResolved, { reactionId, damage: reactionDmg, affectedCount });
         return;
       }
       for (const splash of enemies) {
         if (splash === target || splash.isDead) continue;
+        affectedCount += 1;
         const dead = splash.applyDamage(reactionDmg * 0.4);
         if (dead) this.hooks.onEnemyKilled(splash);
       }
+      EventBus.emit(EVENTS.ReactionResolved, { reactionId, damage: reactionDmg, affectedCount });
     }
 
     if (killedByBase) this.hooks.onEnemyKilled(target);

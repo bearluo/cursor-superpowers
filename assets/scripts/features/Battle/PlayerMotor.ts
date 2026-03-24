@@ -8,7 +8,7 @@ const { ccclass, property } = _decorator;
 @ccclass('PlayerMotor')
 export class PlayerMotor extends Component {
   @property
-  speed = 220;
+  speed = 160;
 
   @property
   minX = -360;
@@ -53,9 +53,12 @@ export class PlayerMotor extends Component {
   update(dt: number): void {
     if (this.runEnded || this.battlePaused) return;
     if (this.move.x === 0 && this.move.y === 0) return;
+    const mag = Math.hypot(this.move.x, this.move.y);
+    const nx = mag > 0 ? this.move.x / mag : 0;
+    const ny = mag > 0 ? this.move.y / mag : 0;
     this.node.getPosition(this.tmp);
-    this.tmp.x += this.move.x * this.speed * dt;
-    this.tmp.y += this.move.y * this.speed * dt;
+    this.tmp.x += nx * this.speed * dt;
+    this.tmp.y += ny * this.speed * dt;
     this.tmp.x = Math.min(this.maxX, Math.max(this.minX, this.tmp.x));
     this.tmp.y = Math.min(this.maxY, Math.max(this.minY, this.tmp.y));
     this.node.setPosition(this.tmp);

@@ -23,6 +23,8 @@ export const EVENTS = {
   BattleFlowPaused: 'battle:flow-paused',
   /** 玩家生命值变化，供 HUD 显示 */
   PlayerHealthChanged: 'combat:player-health-changed',
+  /** 玩家死亡事件（用于复盘统计） */
+  PlayerDefeated: 'combat:player-defeated',
   /** 战斗 HUD 已挂载并注册监听后发出，供 PlayerHealth 等补发一次当前状态 */
   BattleHUDReady: 'ui:battle-hud-ready',
   // 约定：事件名用“域:动作”，便于在 Creator 控制台/日志里按域过滤。
@@ -30,9 +32,16 @@ export const EVENTS = {
   CombatTick: 'combat:tick',
   ProtocolApplied: 'combat:protocol-applied',
   ReactionTriggered: 'combat:reaction-triggered',
+  ReactionResolved: 'combat:reaction-resolved',
   CorruptionChanged: 'run:corruption-changed',
   OverloadStateChanged: 'run:overload-state-changed',
   WaveChanged: 'run:wave-changed',
+  XpOrbDropped: 'run:xp-orb-dropped',
+  XpCollected: 'run:xp-collected',
+  XpProgressChanged: 'run:xp-progress-changed',
+  RewardReadyByXp: 'run:reward-ready-by-xp',
+  ReinforcementSpawned: 'run:reinforcement-spawned',
+  EnemyAliveChanged: 'run:enemy-alive-changed',
   RunRewardOffered: 'run:reward-offered',
   RunRewardChosen: 'run:reward-chosen',
   RunEnded: 'run:ended',

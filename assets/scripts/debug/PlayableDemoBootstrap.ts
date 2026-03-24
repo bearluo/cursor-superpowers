@@ -4,6 +4,7 @@ import { BattleHUDController } from '../features/Battle/BattleHUDController';
 import { BattleHUDView } from '../features/Battle/BattleHUDView';
 import { PlayerMotor } from '../features/Battle/PlayerMotor';
 import { PlayerHealth } from '../features/Battle/PlayerHealth';
+import { RunTelemetry } from '../features/Battle/RunTelemetry';
 import { RewardChoiceController } from '../features/Battle/RewardChoiceController';
 import { KeyboardInputController } from '../features/Input/KeyboardInputController';
 import { VIEW_KEYS } from '../core/Constants';
@@ -23,6 +24,12 @@ export class PlayableDemoBootstrap extends Component {
   @property(Node)
   player: Node | null = null;
 
+  @property(Node)
+  xpRoot: Node | null = null;
+
+  @property(Prefab)
+  xpOrbPrefab: Prefab | null = null;
+
   async start(): Promise<void> {
     if (!this.enemiesRoot) return;
     if (!this.enemyPrefab) return;
@@ -41,9 +48,12 @@ export class PlayableDemoBootstrap extends Component {
     const battleNode = new Node('Battle');
     this.node.addChild(battleNode);
     const arena = battleNode.addComponent(ArenaBattleController);
+    battleNode.addComponent(RunTelemetry);
     arena.player = this.player;
     arena.enemiesRoot = this.enemiesRoot;
     arena.enemyPrefab = this.enemyPrefab;
+    arena.xpRoot = this.xpRoot;
+    arena.xpOrbPrefab = this.xpOrbPrefab;
 
     playerMotor.minX = arena.arenaBounds.minX;
     playerMotor.maxX = arena.arenaBounds.maxX;
