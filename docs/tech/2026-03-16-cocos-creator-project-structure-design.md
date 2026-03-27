@@ -61,7 +61,7 @@ assets/
 
 ## 3. 脚本架构约定
 
-- **依赖方向**: features → systems / framework → core；core 不依赖上层。
+- **依赖方向**: features -> systems / framework -> core；core 不依赖上层。
 - **禁止**: features 之间直接 import；由 EventBus / GameManager / systems 通信。
 - **core**: App, GameManager, EventBus, Localization, NetworkManager 等基础设施。
 - **framework**: ViewBase, DialogBase, UIManager；统一生命周期与关闭方式。
@@ -107,4 +107,4 @@ assets/
 ## 7. 批准与后续
 
 - 设计已按「混合结构 + 文档 + 资源/分包约定」确定。
-- 实施步骤见同目录下的实施计划文档，按计划创建目录与文档骨架后可开始开发。
+- 后续实施请依据本设计文档中的目录与约束直接执行，并在正式目录补充过程记录。

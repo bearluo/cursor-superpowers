@@ -5,7 +5,7 @@
 - C：少返工（完成/可合并前必须过“完成门禁”）
 - D：文档可执行（规则写清楚，团队成员按清单做）
 
-设计细节见：`docs/plans/2026-03-20-minimal-subagents-design.md`
+设计细节见：`docs/pipeline/2026-03-20-minimal-subagents-design.md`
 
 ## 最小 Subagent 集合
 

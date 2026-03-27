@@ -92,4 +92,4 @@
 - `Pnl_Content`
 - `Btn_OK` / `Btn_Cancel`
 
-完整设计见 `docs/plans/2026-03-16-cocos-creator-project-structure-design.md`。
+完整设计见 `docs/tech/2026-03-16-cocos-creator-project-structure-design.md`。

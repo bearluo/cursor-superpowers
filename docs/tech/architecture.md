@@ -76,4 +76,4 @@
 ## 相关文档
 
 - 资源加载与分包约定：`docs/pipeline/assets-workflow.md`
-- 目录结构设计：`docs/plans/2026-03-16-cocos-creator-project-structure-design.md`
+- 目录结构设计：`docs/tech/2026-03-16-cocos-creator-project-structure-design.md`
